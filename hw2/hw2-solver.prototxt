@@ -1,0 +1,15 @@
+net: "/home/min/a/das35/ee570/hw2/hw2-train.prototxt"
+test_interval: 77 # (2 epochs)
+test_iter: 4
+display: 10
+max_iter: 1800 
+snapshot: 77
+snapshot_prefix: "/home/min/a/das35/ee570/hw2/hw2"
+# learning rate parameters
+base_lr: 0.0005 
+lr_policy: "step"
+gamma: 0.95
+stepsize: 1500
+weight_decay: 0.004 
+momentum: 0.9
+solver_mode: CPU

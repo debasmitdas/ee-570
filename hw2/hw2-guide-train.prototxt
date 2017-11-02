@@ -1,0 +1,171 @@
+########################################################################################
+###  INPUT LAYERS
+########################################################################################
+# This is the input layer.  Notice that there is one for when we are training and one for when we are testing.
+# TRAIN input layer
+layer {
+	name: "data"				<---- We name this layer.  (You can't have two layers with the same name.)
+	type: "ImageData"			<---- We specify the layer type.  There are lots to choose from: http://caffe.berkeleyvision.org/tutorial/layers.html
+	top: "data"					<---- name of your top blob.  Notice that there can be multiple.
+	top: "label"
+	image_data_param {			<---- Parameters specific to this layer
+		source: "/home/jjohanse/ece570hw2/hw2-train-split.txt"		<--- this is the file that has paths to all of your images + labels
+		new_height: 112			<---- This line (and the next) automatically resize all input images to these dimensions so they fit into your network.
+		new_width: 112
+		batch_size: 30			<---- Specify your batch size
+		shuffle: true			<---- Specify whether to shuffle or not.  Recommended to shuffle.
+	}
+	include {
+		phase: TRAIN			<---- This specifies whether this layer is included in the network during TRAIN/TEST.  
+	}							<---- Deleting the entire "include" section means it is always included.
+}
+# TEST input layer
+layer {
+	name: "data"
+	type: "ImageData"
+	top: "data"
+	top: "label"
+	image_data_param {
+		source: "/home/jjohanse/ece570hw2/hw2-test-split.txt"   <---- Notice how we specify our test data here
+		new_height: 112 		<---- Almost all of these parameters should be identical to your TRAIN input layer
+		new_width: 112
+		batch_size: 30			<---- You could change this one to be different that your TRAIN input layer
+		shuffle: true			<---- You could change this one to be different that your TRAIN input layer
+	}
+	include {
+		phase: TEST				<---- Be sure to specify that this layer is only included during the TEST phase
+	}
+}
+
+########################################################################################
+###  CONVOLUTIONAL LAYER
+########################################################################################
+layer {
+	name: "conv1_1"			<----   When loading pre-trained weights, the name of your layer and the name of pre-trained weights layer must match.
+	type: "Convolution"		<----	Convolutional layer
+	bottom: "data"			<---- 	Your bottom blob should match the name of the top blob from the previous layer.  This is how you concatenate layers.
+	top: "conv1_1"
+	param {
+		lr_mult: 1			<---- The first "param" refers to the "weights".  
+	}
+	param {					<---- The second "param" refers to the "biases".  They can hold different learning rates, for example.
+		lr_mult: 2
+	}
+	convolution_param {		<---- Parameters specific to convolutional layers
+		num_output: 64		<---- Number of filters
+		pad: 1				<---- Padding on each side of the image (top, bottom, left, right)
+		kernel_size: 3		<---- kernel size.  (This would be a 3x3 kernel.)
+		weight_filler {
+			type: "xavier"	<---- How your weights are initialized.  "Xavier" is a good method.
+		}
+		bias_filler {
+			type: "constant" <---- How your biases are filled.
+			value: 0		<---- initialize the biases to zero (0)
+		}
+	}
+}
+
+########################################################################################
+###  RELU LAYER
+########################################################################################
+layer {
+	name: "relu1_1"			
+	type: "ReLU"			<---- RELU activation function
+	bottom: "conv1_1"		<---- specifying the top blob and the bottom blob as the same (in the case of "relu" and "dropout") means that 
+	top: "conv1_1"			<---- the computer re-uses the same memory locations for these values.  (This reduces your memory footprint.  Important for GPU's.) 
+}
+
+
+########################################################################################
+###  POOLING LAYER
+########################################################################################
+layer {
+	name: "pool1"
+	type: "Pooling"			<---- Pooling layer
+	bottom: "conv1_2"
+	top: "pool1"
+	pooling_param {			<---- Parameters specific to convolutional layers
+		pool: MAX			<---- Type of pooling layer.  Options include max, average, or stochastic pooling
+		kernel_size: 2		<---- kernel size.  (This would be a 2x2 kernel.)
+		stride: 2			<---- stride.  After this layer, your dimensions would be cut in half.
+	}
+}
+
+
+########################################################################################
+###  FULLY-CONNECTED LAYER
+########################################################################################
+layer {
+	name: "fc6"
+	type: "InnerProduct"	<---- Fully-connected layer
+	bottom: "pool5"	
+	top: "fc6"
+	param {
+		lr_mult: 1
+	}
+	param {
+		lr_mult: 2
+	}
+	inner_product_param {
+		num_output: 4096	<---- Number of nodes
+		weight_filler {
+			type: "xavier"
+		}
+		bias_filler {
+			type: "constant"
+		}
+	}
+}
+
+########################################################################################
+###  DROPOUT LAYER
+########################################################################################
+layer {
+	name: "drop6"
+	type: "Dropout"			<---- Dropout layer (these are often helpful in preventing a network from overfitting/memorizing the dataset)
+	bottom: "fc6"
+	top: "fc6"
+	dropout_param {
+		dropout_ratio: 0.5	<---- This ratio is only used during training.  During test, all connections are intact (i.e. none are dropped).
+	}
+}
+
+########################################################################################
+###  SOFTMAX LAYERS
+########################################################################################
+### Softmax with loss (for training)
+layer {
+	name: "loss"				
+	type: "SoftmaxWithLoss"		<---- Softmax layer with loss.  Used during training.
+	bottom: "fc8"
+	bottom: "label"				<---- Notice how the label from the first layer's top blob is connected here
+	top: "loss"					<---- Any dangling top blobs (that aren't connected to any subsequent layers) are outputted to the console
+	include {
+		phase: TRAIN
+	}
+}
+### Softmax without loss (for testing)
+layer {
+	bottom: "fc8"
+	top: "prob"
+	name: "prob"	
+	type: "Softmax"  			<---- Softmax layer.  Used during testing.
+	include {
+		phase: TEST
+	}
+}
+
+########################################################################################
+###  ACCURACY LAYER
+########################################################################################
+layer {
+	name: "accuracy"
+	type: "Accuracy"			<---- Accuracy layer.  Useful to compute your accuracy to see if things are improving.
+	bottom: "prob"
+	bottom: "label"
+	top: "accuracy/top-1"
+	include {
+		phase: TEST
+	}
+}
+

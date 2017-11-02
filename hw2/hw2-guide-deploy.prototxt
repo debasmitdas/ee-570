@@ -1,0 +1,90 @@
+###############################################################################
+# INPUT LAYER CHANGES
+###############################################################################
+### Our Input layer in our hw2-train.prototxt file looked something like this:
+	layer {
+		name: "data"
+		type: "ImageData"
+		top: "data"
+		top: "label"
+		image_data_param {
+			source: "/home/jjohanse/ece570hw2/hw2-train-split.txt"
+			new_height: 112
+			new_width: 112
+			batch_size: 30
+			shuffle: true
+		}
+		include {
+			phase: TRAIN
+		}
+	}
+	layer {
+		name: "data"
+		type: "ImageData"
+		top: "data"
+		top: "label"
+		image_data_param {
+			source: "/home/jjohanse/ece570hw2/hw2-test-split.txt"
+			new_height: 112
+			new_width: 112
+			batch_size: 30
+			shuffle: true
+		}
+		include {
+			phase: TEST
+		}
+	}
+
+### We replace those in our hw2-deploy.prototxt file with something like this:
+	input: "data"
+	input_shape {
+		dim: 1		# batch size of one because we want to feed a single image into it
+		dim: 3		# 3 color channels (RGB)
+		dim: 112	# height
+		dim: 112	# width
+	}
+
+###############################################################################
+# HIDDEN LAYER CHANGES
+###############################################################################
+### There are none.
+### You can basically copy and paste the "middle stuff" as-is.
+
+###############################################################################
+# OUTPUT LAYER CHANGES
+###############################################################################
+### Our output layers in our hw2-train.prototxt file looked something like this:
+	layer {
+		bottom: "fc8"
+		bottom: "label"
+		top: "loss"
+		name: "loss"
+		type: "SoftmaxWithLoss"
+	}
+	layer {
+		bottom: "fc8"
+		top: "prob"
+		name: "prob"
+		type: "Softmax"
+		include {
+			phase: TEST
+		}
+	}
+	layer {
+		name: "accuracy"
+		type: "Accuracy"
+		bottom: "prob"
+		bottom: "label"
+		top: "accuracy/top-1"
+		include {
+			phase: TEST
+		}
+	}
+
+### We replace those in our hw2-deploy.prototxt file with something like this:
+	layer {
+		bottom: "fc8"
+		top: "loss"
+		name: "loss"
+		type: "Softmax"
+	}

@@ -1,0 +1,32 @@
+This NN classifies iris data into 3 different classes.
+These are the user-specified options and hyper-parameters:
+Training File: hw1-train-split.txt
+Test File: hw1-test-split.txt
+Number of Inputs: 4
+Number of Outputs: 3
+<other hyperparameters hidden>
+This is what the dataset looks like:
+trainSize: 135
+testSize: 15
+This is what the NN looks like:
+<network shape hidden>
+
+....
+
+Testing the network.
+Predicted: 1. Desired: 1. Correct: 1/1
+Predicted: 1. Desired: 1. Correct: 2/2
+Predicted: 1. Desired: 1. Correct: 3/3
+Predicted: 1. Desired: 1. Correct: 4/4
+Predicted: 1. Desired: 1. Correct: 5/5
+Predicted: 2. Desired: 2. Correct: 6/6
+Predicted: 2. Desired: 2. Correct: 7/7
+Predicted: 3. Desired: 2. Correct: 7/8
+Predicted: 2. Desired: 2. Correct: 8/9
+Predicted: 2. Desired: 2. Correct: 9/10
+Predicted: 3. Desired: 3. Correct: 10/11
+Predicted: 3. Desired: 3. Correct: 11/12
+Predicted: 3. Desired: 3. Correct: 12/13
+Predicted: 3. Desired: 3. Correct: 13/14
+Predicted: 3. Desired: 3. Correct: 14/15
+Percent correct during test: 0.93333333333333
